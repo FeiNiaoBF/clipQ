@@ -1,0 +1,62 @@
+{
+    // 界面和主题设置
+    "workbench.iconTheme": "material-icon-theme",
+    "workbench.colorTheme": "Atom One Dark",
+    "workbench.editorAssociations": {
+        "*.yml": "default"
+    },
+    "workbench.tree.enableStickyScroll": true,
+    // 编辑器外观设置
+    "editor.fontSize": 16,
+    "editor.cursorBlinking": "expand",
+    "editor.renderWhitespace": "all",
+    "editor.guides.bracketPairs": "active",
+    "editor.stickyScroll.enabled": true,
+    "editor.fontLigatures": true,
+    "editor.bracketPairColorization.independentColorPoolPerBracketType": true,
+    "editor.minimap.renderCharacters": false,
+    "editor.unicodeHighlight.nonBasicASCII": false,
+    "editor.formatOnSaveMode": "modificationsIfAvailable",
+    "editor.fontFamily": "'Maple Mono SC NF', 'Consolas', 'Courier New', 'monospace'",
+    "editor.codeActionsOnSave": {},
+    "editor.formatOnSave": true,
+    "files.autoSave": "afterDelay",
+    "files.insertFinalNewline": true,
+    "files.trimFinalNewlines": true,
+    "files.trimTrailingWhitespace": true,
+    "terminal.integrated.fontFamily": "Maple Mono SC NF, MesloLGS NF",
+    "terminal.integrated.fontSize": 16,
+    "[c]": {
+        "editor.defaultFormatter": "ms-vscode.cpptools"
+    },
+    "[jsonc]": {
+        "editor.defaultFormatter": "vscode.json-language-features"
+    },
+    "[go]": {
+        "editor.formatOnSave": true,
+        "editor.codeActionsOnSave": {
+            "source.organizeImports": "explicit"
+        },
+        "editor.defaultFormatter": "golang.go"
+    },
+    "go.gopath": "/home/yeekox/workspace/gopath",
+    "go.goroot": "/usr/local/go/go",
+    "gopls": {
+        "ui.semanticTokens": true,
+        "ui.noSemanticString": true, // delegates string syntax highlighting to vscode
+        "ui.noSemanticNumber": true, // delegates number syntax highlighting to vscode
+        "formatting.gofumpt": true,
+        "symbolStyle": "Dynamic"
+    },
+    "go.coverOnTestPackage": false,
+    "go.testExplorer.concatenateMessages": false,
+    "go.formatTool": "goimports",
+    "prettier.endOfLine": "auto",
+    "prettier.jsxSingleQuote": true,
+    "prettier.semi": false,
+    "prettier.useEditorConfig": false,
+    "prettier.bracketSameLine": true,
+    "prettier.enableDebugLogs": true,
+    "prettier.singleQuote": true,
+    "sqltools.highlightQuery": false,
+}

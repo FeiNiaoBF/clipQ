@@ -1,0 +1,54 @@
+{
+    "sourceFile": "main.go",
+    "activeCommit": 0,
+    "commits": [
+        {
+            "activePatchIndex": 9,
+            "patches": [
+                {
+                    "date": 1719297578812,
+                    "content": "Index: \n===================================================================\n--- \n+++ \n"
+                },
+                {
+                    "date": 1719297585956,
+                    "content": "Index: \n===================================================================\n--- \n+++ \n@@ -1,1 +1,40 @@\n-pa\n+// Copyright 2013 The Gorilla WebSocket Authors. All rights reserved.\n+// Use of this source code is governed by a BSD-style\n+// license that can be found in the LICENSE file.\n+\n+package main\n+\n+import (\n+\t\"flag\"\n+\t\"log\"\n+\t\"net/http\"\n+)\n+\n+var addr = flag.String(\"addr\", \":8080\", \"http service address\")\n+\n+func serveHome(w http.ResponseWriter, r *http.Request) {\n+\tlog.Println(r.URL)\n+\tif r.URL.Path != \"/\" {\n+\t\thttp.Error(w, \"Not found\", http.StatusNotFound)\n+\t\treturn\n+\t}\n+\tif r.Method != http.MethodGet {\n+\t\thttp.Error(w, \"Method not allowed\", http.StatusMethodNotAllowed)\n+\t\treturn\n+\t}\n+\thttp.ServeFile(w, r, \"home.html\")\n+}\n+\n+func main() {\n+\tflag.Parse()\n+\thub := newHub()\n+\tgo hub.run()\n+\thttp.HandleFunc(\"/\", serveHome)\n+\thttp.HandleFunc(\"/ws\", func(w http.ResponseWriter, r *http.Request) {\n+\t\tserveWs(hub, w, r)\n+\t})\n+\terr := http.ListenAndServe(*addr, nil)\n+\tif err != nil {\n+\t\tlog.Fatal(\"ListenAndServe: \", err)\n+\t}\n+}\n"
+                },
+                {
+                    "date": 1719297594800,
+                    "content": "Index: \n===================================================================\n--- \n+++ \n@@ -1,8 +1,4 @@\n-// Copyright 2013 The Gorilla WebSocket Authors. All rights reserved.\n-// Use of this source code is governed by a BSD-style\n-// license that can be found in the LICENSE file.\n-\n package main\n \n import (\n \t\"flag\"\n@@ -26,9 +22,9 @@\n }\n \n func main() {\n \tflag.Parse()\n-\thub := newHub()\n+\thub := New\n \tgo hub.run()\n \thttp.HandleFunc(\"/\", serveHome)\n \thttp.HandleFunc(\"/ws\", func(w http.ResponseWriter, r *http.Request) {\n \t\tserveWs(hub, w, r)\n"
+                },
+                {
+                    "date": 1719297603381,
+                    "content": "Index: \n===================================================================\n--- \n+++ \n@@ -22,9 +22,9 @@\n }\n \n func main() {\n \tflag.Parse()\n-\thub := New\n+\thub := serNewClipQ()\n \tgo hub.run()\n \thttp.HandleFunc(\"/\", serveHome)\n \thttp.HandleFunc(\"/ws\", func(w http.ResponseWriter, r *http.Request) {\n \t\tserveWs(hub, w, r)\n"
+                },
+                {
+                    "date": 1719297610024,
+                    "content": "Index: \n===================================================================\n--- \n+++ \n@@ -22,9 +22,9 @@\n }\n \n func main() {\n \tflag.Parse()\n-\thub := serNewClipQ()\n+\thub := server.NewClipQ()\n \tgo hub.run()\n \thttp.HandleFunc(\"/\", serveHome)\n \thttp.HandleFunc(\"/ws\", func(w http.ResponseWriter, r *http.Request) {\n \t\tserveWs(hub, w, r)\n"
+                },
+                {
+                    "date": 1719297617395,
+                    "content": "Index: \n===================================================================\n--- \n+++ \n@@ -1,7 +1,8 @@\n package main\n \n import (\n+\t\"clipQ/cmd\"\n \t\"flag\"\n \t\"log\"\n \t\"net/http\"\n )\n@@ -22,9 +23,9 @@\n }\n \n func main() {\n \tflag.Parse()\n-\thub := server.NewClipQ()\n+\thub := cmd.NewClipQ()\n \tgo hub.run()\n \thttp.HandleFunc(\"/\", serveHome)\n \thttp.HandleFunc(\"/ws\", func(w http.ResponseWriter, r *http.Request) {\n \t\tserveWs(hub, w, r)\n"
+                },
+                {
+                    "date": 1719297623675,
+                    "content": "Index: \n===================================================================\n--- \n+++ \n@@ -24,9 +24,9 @@\n \n func main() {\n \tflag.Parse()\n \thub := cmd.NewClipQ()\n-\tgo hub.run()\n+\tgo \n \thttp.HandleFunc(\"/\", serveHome)\n \thttp.HandleFunc(\"/ws\", func(w http.ResponseWriter, r *http.Request) {\n \t\tserveWs(hub, w, r)\n \t})\n"
+                },
+                {
+                    "date": 1719297630906,
+                    "content": "Index: \n===================================================================\n--- \n+++ \n@@ -24,12 +24,12 @@\n \n func main() {\n \tflag.Parse()\n \thub := cmd.NewClipQ()\n-\tgo \n+\tgo hub.Run()\n \thttp.HandleFunc(\"/\", serveHome)\n \thttp.HandleFunc(\"/ws\", func(w http.ResponseWriter, r *http.Request) {\n-\t\tserveWs(hub, w, r)\n+\t\tcmd.serveWs(hub, w, r)\n \t})\n \terr := http.ListenAndServe(*addr, nil)\n \tif err != nil {\n \t\tlog.Fatal(\"ListenAndServe: \", err)\n"
+                },
+                {
+                    "date": 1719297645755,
+                    "content": "Index: \n===================================================================\n--- \n+++ \n@@ -27,9 +27,9 @@\n \thub := cmd.NewClipQ()\n \tgo hub.Run()\n \thttp.HandleFunc(\"/\", serveHome)\n \thttp.HandleFunc(\"/ws\", func(w http.ResponseWriter, r *http.Request) {\n-\t\tcmd.serveWs(hub, w, r)\n+\t\tcmd.ServeWs()(hub, w, r)\n \t})\n \terr := http.ListenAndServe(*addr, nil)\n \tif err != nil {\n \t\tlog.Fatal(\"ListenAndServe: \", err)\n"
+                },
+                {
+                    "date": 1719298101037,
+                    "content": "Index: \n===================================================================\n--- \n+++ \n@@ -1,11 +1,12 @@\n package main\n \n import (\n-\t\"clipQ/cmd\"\n \t\"flag\"\n \t\"log\"\n \t\"net/http\"\n+\n+\t\"clipQ/cmd\"\n )\n \n var addr = flag.String(\"addr\", \":8080\", \"http service address\")\n \n@@ -18,18 +19,18 @@\n \tif r.Method != http.MethodGet {\n \t\thttp.Error(w, \"Method not allowed\", http.StatusMethodNotAllowed)\n \t\treturn\n \t}\n-\thttp.ServeFile(w, r, \"home.html\")\n+\thttp.ServeFile(w, r, \"\")\n }\n \n func main() {\n \tflag.Parse()\n \thub := cmd.NewClipQ()\n \tgo hub.Run()\n \thttp.HandleFunc(\"/\", serveHome)\n \thttp.HandleFunc(\"/ws\", func(w http.ResponseWriter, r *http.Request) {\n-\t\tcmd.ServeWs()(hub, w, r)\n+\t\tcmd.ServeWs(hub, w, r)\n \t})\n \terr := http.ListenAndServe(*addr, nil)\n \tif err != nil {\n \t\tlog.Fatal(\"ListenAndServe: \", err)\n"
+                }
+            ],
+            "date": 1719297578812,
+            "name": "Commit-0",
+            "content": "pa\n"
+        }
+    ]
+}

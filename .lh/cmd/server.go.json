@@ -1,0 +1,26 @@
+{
+    "sourceFile": "cmd/server.go",
+    "activeCommit": 0,
+    "commits": [
+        {
+            "activePatchIndex": 2,
+            "patches": [
+                {
+                    "date": 1719295057517,
+                    "content": "Index: \n===================================================================\n--- \n+++ \n"
+                },
+                {
+                    "date": 1719296507459,
+                    "content": "Index: \n===================================================================\n--- \n+++ \n@@ -32,12 +32,12 @@\n \t\t\t}\n \t\tcase msg := <-c.ClipMsg:\n \t\t\tfor client := range c.Clients {\n \t\t\t\tselect {\n-\t\t\t\tcase client.send <- msg:\n+\t\t\t\tcase client.Write <- msg:\n \t\t\t\tdefault:\n \t\t\t\t\tdelete(c.Clients, client)\n-\t\t\t\t\tclose(client.send)\n+\t\t\t\t\tclose(client.Write)\n \t\t\t\t}\n \t\t\t}\n \t\t}\n \t}\n"
+                },
+                {
+                    "date": 1719298083773,
+                    "content": "Index: \n===================================================================\n--- \n+++ \n@@ -27,9 +27,9 @@\n \t\t\tc.Clients[client] = true\n \t\tcase client := <-c.Unregister:\n \t\t\tif _, ok := c.Clients[client]; ok {\n \t\t\t\tdelete(c.Clients, client)\n-\t\t\t\t// close(client.send)\n+\t\t\t\tclose(client.send)\n \t\t\t}\n \t\tcase msg := <-c.ClipMsg:\n \t\t\tfor client := range c.Clients {\n \t\t\t\tselect {\n"
+                }
+            ],
+            "date": 1719295057517,
+            "name": "Commit-0",
+            "content": "package cmd\n\ntype ClipQ struct {\n\t// Registered clients.\n\tClients map[*Client]bool\n\t// ClipMsg clipboard message from client.\n\tClipMsg chan []byte\n\t// Register requests from the clients.\n\tRegister chan *Client\n\n\tUnregister chan *Client\n}\n\nfunc NewClipQ() *ClipQ {\n\treturn &ClipQ{\n\t\tClients:    make(map[*Client]bool),\n\t\tClipMsg:    make(chan []byte),\n\t\tRegister:   make(chan *Client),\n\t\tUnregister: make(chan *Client),\n\t}\n}\n\nfunc (c *ClipQ) Run() {\n\tfor {\n\t\tselect {\n\t\tcase client := <-c.Register:\n\t\t\tc.Clients[client] = true\n\t\tcase client := <-c.Unregister:\n\t\t\tif _, ok := c.Clients[client]; ok {\n\t\t\t\tdelete(c.Clients, client)\n\t\t\t\t// close(client.send)\n\t\t\t}\n\t\tcase msg := <-c.ClipMsg:\n\t\t\tfor client := range c.Clients {\n\t\t\t\tselect {\n\t\t\t\tcase client.send <- msg:\n\t\t\t\tdefault:\n\t\t\t\t\tdelete(c.Clients, client)\n\t\t\t\t\tclose(client.send)\n\t\t\t\t}\n\t\t\t}\n\t\t}\n\t}\n}\n"
+        }
+    ]
+}

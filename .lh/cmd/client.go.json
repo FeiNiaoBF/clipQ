@@ -1,0 +1,134 @@
+{
+    "sourceFile": "cmd/client.go",
+    "activeCommit": 0,
+    "commits": [
+        {
+            "activePatchIndex": 29,
+            "patches": [
+                {
+                    "date": 1719295061776,
+                    "content": "Index: \n===================================================================\n--- \n+++ \n"
+                },
+                {
+                    "date": 1719296796410,
+                    "content": "Index: \n===================================================================\n--- \n+++ \n@@ -69,8 +69,9 @@\n \t\tticker.Stop()\n \t\tc.Conn.Close()\n \t}()\n \tfor {\n+\t\tselect\n \t}\n }\n \n func (c *Client) Close() {\n"
+                },
+                {
+                    "date": 1719296803222,
+                    "content": "Index: \n===================================================================\n--- \n+++ \n@@ -5,8 +5,9 @@\n \t\"log\"\n \t\"time\"\n \n \t\"github.com/gorilla/websocket\"\n+\t\"golang.org/x/text/cases\"\n )\n \n const (\n \t// Time allowed to write a message to the peer.\n@@ -69,9 +70,11 @@\n \t\tticker.Stop()\n \t\tc.Conn.Close()\n \t}()\n \tfor {\n-\t\tselect\n+\t\tselect {\n+\t\t\tcase \n+\t\t}\n \t}\n }\n \n func (c *Client) Close() {\n"
+                },
+                {
+                    "date": 1719296810029,
+                    "content": "Index: \n===================================================================\n--- \n+++ \n@@ -6,8 +6,9 @@\n \t\"time\"\n \n \t\"github.com/gorilla/websocket\"\n \t\"golang.org/x/text/cases\"\n+\t\"golang.org/x/text/message\"\n )\n \n const (\n \t// Time allowed to write a message to the peer.\n@@ -71,9 +72,9 @@\n \t\tc.Conn.Close()\n \t}()\n \tfor {\n \t\tselect {\n-\t\t\tcase \n+\t\tcase message, ok := \n \t\t}\n \t}\n }\n \n"
+                },
+                {
+                    "date": 1719296817174,
+                    "content": "Index: \n===================================================================\n--- \n+++ \n@@ -5,10 +5,8 @@\n \t\"log\"\n \t\"time\"\n \n \t\"github.com/gorilla/websocket\"\n-\t\"golang.org/x/text/cases\"\n-\t\"golang.org/x/text/message\"\n )\n \n const (\n \t// Time allowed to write a message to the peer.\n@@ -72,9 +70,10 @@\n \t\tc.Conn.Close()\n \t}()\n \tfor {\n \t\tselect {\n-\t\tcase message, ok := \n+\t\tcase message, ok := <-c.Write:\n+\t\t\tc.Conn\n \t\t}\n \t}\n }\n \n"
+                },
+                {
+                    "date": 1719296825302,
+                    "content": "Index: \n===================================================================\n--- \n+++ \n@@ -71,9 +71,12 @@\n \t}()\n \tfor {\n \t\tselect {\n \t\tcase message, ok := <-c.Write:\n-\t\t\tc.Conn\n+\t\t\tc.Conn.SetWriteDeadline(time.Now().Add(writeWait))\n+\t\t\tif !ok {\n+\t\t\t\t\n+\t\t\t}\n \t\t}\n \t}\n }\n \n"
+                },
+                {
+                    "date": 1719296843719,
+                    "content": "Index: \n===================================================================\n--- \n+++ \n@@ -73,9 +73,11 @@\n \t\tselect {\n \t\tcase message, ok := <-c.Write:\n \t\t\tc.Conn.SetWriteDeadline(time.Now().Add(writeWait))\n \t\t\tif !ok {\n-\t\t\t\t\n+\t\t\t\t// The hub closed the channel.\n+\t\t\t\tc.Conn.WriteMessage(websocket.CloseMessage, []byte{})\n+\t\t\t\treturn\n \t\t\t}\n \t\t}\n \t}\n }\n"
+                },
+                {
+                    "date": 1719296855732,
+                    "content": "Index: \n===================================================================\n--- \n+++ \n@@ -77,8 +77,10 @@\n \t\t\t\t// The hub closed the channel.\n \t\t\t\tc.Conn.WriteMessage(websocket.CloseMessage, []byte{})\n \t\t\t\treturn\n \t\t\t}\n+\n+\t\t\tw, err := c.Conn\n \t\t}\n \t}\n }\n \n"
+                },
+                {
+                    "date": 1719296870569,
+                    "content": "Index: \n===================================================================\n--- \n+++ \n@@ -78,9 +78,13 @@\n \t\t\t\tc.Conn.WriteMessage(websocket.CloseMessage, []byte{})\n \t\t\t\treturn\n \t\t\t}\n \n-\t\t\tw, err := c.Conn\n+\t\t\tw, err := c.Conn.NextWriter(websocket.TextMessage)\n+\t\t\tif err != nil {\n+\t\t\t\treturn\n+\t\t\t}\n+\t\t\tw.Write()\n \t\t}\n \t}\n }\n \n"
+                },
+                {
+                    "date": 1719296878262,
+                    "content": "Index: \n===================================================================\n--- \n+++ \n@@ -82,9 +82,11 @@\n \t\t\tw, err := c.Conn.NextWriter(websocket.TextMessage)\n \t\t\tif err != nil {\n \t\t\t\treturn\n \t\t\t}\n-\t\t\tw.Write()\n+\t\t\tw.Write(message)\n+\n+\t\t\tn := \n \t\t}\n \t}\n }\n \n"
+                },
+                {
+                    "date": 1719296885038,
+                    "content": "Index: \n===================================================================\n--- \n+++ \n@@ -84,9 +84,9 @@\n \t\t\t\treturn\n \t\t\t}\n \t\t\tw.Write(message)\n \n-\t\t\tn := \n+\t\t\tn := len(c.Write)\n \t\t}\n \t}\n }\n \n"
+                },
+                {
+                    "date": 1719296928277,
+                    "content": "Index: \n===================================================================\n--- \n+++ \n@@ -85,8 +85,9 @@\n \t\t\t}\n \t\t\tw.Write(message)\n \n \t\t\tn := len(c.Write)\n+\t\t\tfor\n \t\t}\n \t}\n }\n \n"
+                },
+                {
+                    "date": 1719296934149,
+                    "content": "Index: \n===================================================================\n--- \n+++ \n@@ -85,9 +85,9 @@\n \t\t\t}\n \t\t\tw.Write(message)\n \n \t\t\tn := len(c.Write)\n-\t\t\tfor\n+\t\t\tfor i := 0; i\n \t\t}\n \t}\n }\n \n"
+                },
+                {
+                    "date": 1719296943543,
+                    "content": "Index: \n===================================================================\n--- \n+++ \n@@ -85,9 +85,11 @@\n \t\t\t}\n \t\t\tw.Write(message)\n \n \t\t\tn := len(c.Write)\n-\t\t\tfor i := 0; i\n+\t\t\tfor i := 0; i < n; i++ {\n+\t\t\t\tw.Write()\n+\t\t\t}\n \t\t}\n \t}\n }\n \n"
+                },
+                {
+                    "date": 1719296949045,
+                    "content": "Index: \n===================================================================\n--- \n+++ \n@@ -86,9 +86,10 @@\n \t\t\tw.Write(message)\n \n \t\t\tn := len(c.Write)\n \t\t\tfor i := 0; i < n; i++ {\n-\t\t\t\tw.Write()\n+\t\t\t\tw.Write(newline)\n+\t\t\t\tw.Write(<-c.Write)\n \t\t\t}\n \t\t}\n \t}\n }\n"
+                },
+                {
+                    "date": 1719296957583,
+                    "content": "Index: \n===================================================================\n--- \n+++ \n@@ -89,8 +89,10 @@\n \t\t\tfor i := 0; i < n; i++ {\n \t\t\t\tw.Write(newline)\n \t\t\t\tw.Write(<-c.Write)\n \t\t\t}\n+\n+\t\t\tif err := w.Close()\n \t\t}\n \t}\n }\n \n"
+                },
+                {
+                    "date": 1719296964956,
+                    "content": "Index: \n===================================================================\n--- \n+++ \n@@ -90,9 +90,11 @@\n \t\t\t\tw.Write(newline)\n \t\t\t\tw.Write(<-c.Write)\n \t\t\t}\n \n-\t\t\tif err := w.Close()\n+\t\t\tif err := w.Close(); err != nil {\n+\t\t\t\treturn\n+\t\t\t}\n \t\t}\n \t}\n }\n \n"
+                },
+                {
+                    "date": 1719296970197,
+                    "content": "Index: \n===================================================================\n--- \n+++ \n@@ -93,8 +93,9 @@\n \n \t\t\tif err := w.Close(); err != nil {\n \t\t\t\treturn\n \t\t\t}\n+\t\tcase <-ticker.C:\n \t\t}\n \t}\n }\n \n"
+                },
+                {
+                    "date": 1719296978175,
+                    "content": "Index: \n===================================================================\n--- \n+++ \n@@ -94,8 +94,9 @@\n \t\t\tif err := w.Close(); err != nil {\n \t\t\t\treturn\n \t\t\t}\n \t\tcase <-ticker.C:\n+\t\t\tc.Conn.SetWriteDeadline()\n \t\t}\n \t}\n }\n \n"
+                },
+                {
+                    "date": 1719296984326,
+                    "content": "Index: \n===================================================================\n--- \n+++ \n@@ -94,9 +94,10 @@\n \t\t\tif err := w.Close(); err != nil {\n \t\t\t\treturn\n \t\t\t}\n \t\tcase <-ticker.C:\n-\t\t\tc.Conn.SetWriteDeadline()\n+\t\t\tc.Conn.SetWriteDeadline(time.Now().Add(writeWait))\n+\t\t\t\n \t\t}\n \t}\n }\n \n"
+                },
+                {
+                    "date": 1719296991134,
+                    "content": "Index: \n===================================================================\n--- \n+++ \n@@ -95,9 +95,11 @@\n \t\t\t\treturn\n \t\t\t}\n \t\tcase <-ticker.C:\n \t\t\tc.Conn.SetWriteDeadline(time.Now().Add(writeWait))\n-\t\t\t\n+\t\t\tif err := c.Conn.WriteMessage(websocket.PingMessage, nil); err != nil {\n+\t\t\t\treturn\n+\t\t\t}\n \t\t}\n \t}\n }\n \n"
+                },
+                {
+                    "date": 1719297003101,
+                    "content": "Index: \n===================================================================\n--- \n+++ \n@@ -2,8 +2,9 @@\n \n import (\n \t\"bytes\"\n \t\"log\"\n+\t\"net/http\"\n \t\"time\"\n \n \t\"github.com/gorilla/websocket\"\n )\n@@ -106,4 +107,20 @@\n func (c *Client) Close() {\n \tc.Hub.Unregister <- c\n \tc.Conn.Close()\n }\n+\n+// serveWs handles websocket requests from the peer.\n+func serveWs(hub *Hub, w http.ResponseWriter, r *http.Request) {\n+\tconn, err := upgrader.Upgrade(w, r, nil)\n+\tif err != nil {\n+\t\tlog.Println(err)\n+\t\treturn\n+\t}\n+\tclient := &Client{hub: hub, conn: conn, send: make(chan []byte, 256)}\n+\tclient.hub.register <- client\n+\n+\t// Allow collection of memory referenced by the caller by doing all work in\n+\t// new goroutines.\n+\tgo client.writePump()\n+\tgo client.readPump()\n+}\n"
+                },
+                {
+                    "date": 1719297009385,
+                    "content": "Index: \n===================================================================\n--- \n+++ \n@@ -109,9 +109,9 @@\n \tc.Conn.Close()\n }\n \n // serveWs handles websocket requests from the peer.\n-func serveWs(hub *Hub, w http.ResponseWriter, r *http.Request) {\n+func serveWs(hub *, w http.ResponseWriter, r *http.Request) {\n \tconn, err := upgrader.Upgrade(w, r, nil)\n \tif err != nil {\n \t\tlog.Println(err)\n \t\treturn\n"
+                },
+                {
+                    "date": 1719297026522,
+                    "content": "Index: \n===================================================================\n--- \n+++ \n@@ -109,15 +109,15 @@\n \tc.Conn.Close()\n }\n \n // serveWs handles websocket requests from the peer.\n-func serveWs(hub *, w http.ResponseWriter, r *http.Request) {\n+func serveWs(hub *ClipQ, w http.ResponseWriter, r *http.Request) {\n \tconn, err := upgrader.Upgrade(w, r, nil)\n \tif err != nil {\n \t\tlog.Println(err)\n \t\treturn\n \t}\n-\tclient := &Client{hub: hub, conn: conn, send: make(chan []byte, 256)}\n+\tclient := &Client{ClipQ: hub, conn: conn, send: make(chan []byte, 256)}\n \tclient.hub.register <- client\n \n \t// Allow collection of memory referenced by the caller by doing all work in\n \t// new goroutines.\n"
+                },
+                {
+                    "date": 1719297032502,
+                    "content": "Index: \n===================================================================\n--- \n+++ \n@@ -115,12 +115,6 @@\n \tif err != nil {\n \t\tlog.Println(err)\n \t\treturn\n \t}\n-\tclient := &Client{ClipQ: hub, conn: conn, send: make(chan []byte, 256)}\n-\tclient.hub.register <- client\n \n-\t// Allow collection of memory referenced by the caller by doing all work in\n-\t// new goroutines.\n-\tgo client.writePump()\n-\tgo client.readPump()\n }\n"
+                },
+                {
+                    "date": 1719297217952,
+                    "content": "Index: \n===================================================================\n--- \n+++ \n@@ -33,10 +33,10 @@\n \tHub  *ClipQ\n \tConn *websocket.Conn\n \t// write messages\n \tWrite chan []byte\n-\t// read messages\n-\tRead chan []byte\n+\t// // read messages\n+\t// Read chan []byte\n }\n \n var (\n \tnewline = []byte{'\\n'}\n@@ -115,6 +115,6 @@\n \tif err != nil {\n \t\tlog.Println(err)\n \t\treturn\n \t}\n-\n+cl\n }\n"
+                },
+                {
+                    "date": 1719297321709,
+                    "content": "Index: \n===================================================================\n--- \n+++ \n@@ -33,10 +33,10 @@\n \tHub  *ClipQ\n \tConn *websocket.Conn\n \t// write messages\n \tWrite chan []byte\n-\t// // read messages\n-\t// Read chan []byte\n+\t// read messages\n+\tRead chan []byte\n }\n \n var (\n \tnewline = []byte{'\\n'}\n"
+                },
+                {
+                    "date": 1719297335244,
+                    "content": "Index: \n===================================================================\n--- \n+++ \n@@ -115,6 +115,6 @@\n \tif err != nil {\n \t\tlog.Println(err)\n \t\treturn\n \t}\n-cl\n+\tcl\n }\n"
+                },
+                {
+                    "date": 1719297401761,
+                    "content": "Index: \n===================================================================\n--- \n+++ \n@@ -115,6 +115,6 @@\n \tif err != nil {\n \t\tlog.Println(err)\n \t\treturn\n \t}\n-\tcl\n+\t\n }\n"
+                },
+                {
+                    "date": 1719297407328,
+                    "content": "Index: \n===================================================================\n--- \n+++ \n@@ -115,6 +115,6 @@\n \tif err != nil {\n \t\tlog.Println(err)\n \t\treturn\n \t}\n-\tclient\n+\tclient \n }\n"
+                }
+            ],
+            "date": 1719295061776,
+            "name": "Commit-0",
+            "content": "package cmd\n\nimport (\n\t\"bytes\"\n\t\"log\"\n\t\"time\"\n\n\t\"github.com/gorilla/websocket\"\n)\n\nconst (\n\t// Time allowed to write a message to the peer.\n\twriteWait = 10 * time.Second\n\n\t// Time allowed to read the next pong message from the peer.\n\tpongWait = 60 * time.Second\n\n\t// Send pings to peer with this period. Must be less than pongWait.\n\tpingPeriod = (pongWait * 9) / 10\n\n\t// Maximum message size allowed from peer.\n\tmaxMessageSize = 512\n)\n\nvar upgrader = websocket.Upgrader{\n\tReadBufferSize:  1024,\n\tWriteBufferSize: 1024,\n}\n\ntype Client struct {\n\t// server hub\n\tHub  *ClipQ\n\tConn *websocket.Conn\n\t// write messages\n\tWrite chan []byte\n\t// read messages\n\tRead chan []byte\n}\n\nvar (\n\tnewline = []byte{'\\n'}\n\tspace   = []byte{' '}\n)\n\nfunc (c *Client) ReadPump() {\n\tdefer c.Close()\n\n\t// init conn\n\tc.Conn.SetReadLimit(maxMessageSize)\n\tc.Conn.SetReadDeadline(time.Now().Add(pongWait))\n\tc.Conn.SetPongHandler(func(string) error { c.Conn.SetReadDeadline(time.Now().Add(pongWait)); return nil })\n\n\tfor {\n\t\t_, message, err := c.Conn.ReadMessage()\n\t\tif err != nil {\n\t\t\tif websocket.IsUnexpectedCloseError(err, websocket.CloseGoingAway, websocket.CloseAbnormalClosure) {\n\t\t\t\tlog.Printf(\"error: %v\", err)\n\t\t\t}\n\t\t\tbreak\n\t\t}\n\t\tmessage = bytes.TrimSpace(bytes.Replace(message, newline, space, -1))\n\t\tc.Hub.ClipMsg <- message\n\t}\n}\n\nfunc (c *Client) WritePump() {\n\tticker := time.NewTicker(pingPeriod)\n\tdefer func() {\n\t\tticker.Stop()\n\t\tc.Conn.Close()\n\t}()\n\tfor {\n\t}\n}\n\nfunc (c *Client) Close() {\n\tc.Hub.Unregister <- c\n\tc.Conn.Close()\n}\n"
+        }
+    ]
+}
